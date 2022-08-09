@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Links, LinksFunction, LiveReload, Meta, Outlet } from "remix";
+import type React from "react";
+import { Links, LinksFunction, LiveReload, Meta, Outlet, Scripts } from "remix";
 import type { MetaFunction } from "remix";
 
 import globalStyles from "./styles/app.css";
@@ -10,6 +10,7 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
+  viewport: "width=device-width, initial-scale=1.0",
 });
 
 const Document = ({
@@ -25,6 +26,7 @@ const Document = ({
       <title>{title}</title>
       <Meta />
       <Links />
+      <Scripts />
     </head>
     <body className="h-full">
       {children}

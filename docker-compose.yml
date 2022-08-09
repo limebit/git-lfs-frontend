@@ -1,14 +1,7 @@
 version: "3"
 services:
-  # Postgres
-  postgres:
-    image: postgres:latest
+  git-lfs-server:
+    image: ghcr.io/limebit/express-git-lfs:latest
     ports:
       # Accessible from the host at port :35432
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: my-example-db
-    # Make sure log colors show up correctly
-    tty: true
+      - "4000:3000"

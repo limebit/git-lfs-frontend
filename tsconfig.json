@@ -2,15 +2,13 @@
   "files": [],
   "exclude": ["node_modules"],
   "extends": "./config/shared-tsconfig.json",
-  "references": [
-    {
-      "path": "types"
-    },
-    {
-      "path": "app"
-    },
-    {
-      "path": "prisma"
+  "compilerOptions": {
+    "baseUrl": ".",
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "~/*": ["./app/*", "./types/*", "./scripts/*", "./prisma/*"]
     }
-  ],
+  },
+  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"]
 }

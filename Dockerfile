@@ -33,9 +33,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules /app/node_modules
 
-ADD prisma .
 ADD . .
-RUN yarn run prisma:generate
 RUN yarn run build
 
 # Finally, build the production image with minimal footprint
@@ -48,8 +46,6 @@ WORKDIR /app
 
 # Add RUN true because of COPY bugs in multistage builds
 COPY --from=production-deps /app/node_modules /app/node_modules
-RUN true
-COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
 RUN true
 COPY --from=build /app/build /app/build
 RUN true
