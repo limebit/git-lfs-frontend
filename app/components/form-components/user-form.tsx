@@ -1,6 +1,7 @@
 import React from "react";
 import { z } from "zod";
 import { ValidatedFormInput } from "./input";
+import { ValidatedFormTextarea } from "./textarea";
 
 // userFieldValidation is the global validator for all user fields. The fields
 // can be constructed to a schema using zfd.formData like this:
@@ -35,28 +36,42 @@ export const userFieldValidation = {
     })
     .trim()
     .min(8),
+  sshKeys: z.string().array().nullish(),
 };
 
-export const UsernameFormField = () => {
+export const UsernameFormField = (props: JSX.IntrinsicElements["input"]) => {
   return (
     <ValidatedFormInput
-      id="username"
-      name="username"
       type="text"
       autoComplete="off"
       required={true}
+      id="username"
+      {...props}
+      name="username"
     />
   );
 };
 
-export const PasswordFormField = () => {
+export const SshFormField = (props: JSX.IntrinsicElements["textarea"]) => {
+  return (
+    <ValidatedFormTextarea
+      autoComplete="off"
+      id="sshKeys"
+      {...props}
+      name="sshKeys"
+    />
+  );
+};
+
+export const PasswordFormField = (props: JSX.IntrinsicElements["input"]) => {
   return (
     <ValidatedFormInput
-      id="password"
-      name="password"
-      type="password"
       autoComplete="off"
       required={true}
+      id="password"
+      {...props}
+      name="password"
+      type="password"
     />
   );
 };

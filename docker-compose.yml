@@ -3,5 +3,10 @@ services:
   git-lfs-server:
     image: ghcr.io/limebit/express-git-lfs:latest
     ports:
-      # Accessible from the host at port :35432
-      - "4000:3000"
+      - "8000:8000"
+    environment:
+      - API_KEY=secret
+      - DATA_FOLDER="/service/data"
+    command: yarn run start
+    volumes:
+      - "./data:/service/data"

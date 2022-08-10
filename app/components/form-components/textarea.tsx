@@ -2,23 +2,23 @@ import React from "react";
 import { useField } from "remix-validated-form";
 import { formInputClassName, validationErrorClassName } from ".";
 
-export type ValidatedFormInputProps = JSX.IntrinsicElements["input"] & {
+export type ValidatedFormTextareaProps = JSX.IntrinsicElements["textarea"] & {
   name: string;
   form?: string;
 };
 
-export const ValidatedFormInput = ({
+export const ValidatedFormTextarea = ({
   name,
   children,
   form,
   ...inputProps
-}: ValidatedFormInputProps) => {
+}: ValidatedFormTextareaProps) => {
   const { error, getInputProps } = useField(name, {
     formId: form,
   });
   return (
     <>
-      <input
+      <textarea
         {...getInputProps({ form, ...inputProps })}
         className={formInputClassName}
       />
