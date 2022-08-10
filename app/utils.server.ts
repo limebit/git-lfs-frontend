@@ -1,7 +1,7 @@
 import path from "path";
 
-export const getApiResource = (resource: string): string => {
-  return new URL(path.join("mgmt", resource), process.env.GIT_LFS_SERVER_URL)
+export const getApiResource = (...paths: string[]): string => {
+  return new URL(path.join("mgmt", ...paths), process.env.GIT_LFS_SERVER_URL)
     .href;
 };
 

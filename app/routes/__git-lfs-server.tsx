@@ -101,8 +101,6 @@ export default function Example() {
                     {navigation.map((item) => (
                       <NavLink key={`mobile-${item.name}`} to={item.href}>
                         {({ isActive }) => {
-                          console.log("isActive", isActive);
-
                           return (
                             <span
                               className={classNames(
@@ -154,8 +152,6 @@ export default function Example() {
               {navigation.map((item) => (
                 <NavLink key={`desktop-${item.name}`} to={item.href}>
                   {({ isActive }) => {
-                    console.log("isActive", isActive);
-
                     return (
                       <span
                         className={classNames(

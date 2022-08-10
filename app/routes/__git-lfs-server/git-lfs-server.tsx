@@ -15,6 +15,7 @@ import {
 import { getApiResource, getAuthorizationHeader } from "../../utils.server";
 
 type LoaderData = {
+  id: string;
   username: string;
   sshKeys: string[];
 }[];
@@ -30,13 +31,13 @@ export const loader: LoaderFunction = async (): Promise<LoaderData> => {
     })
   ).json();
 
-  console.log("res", res);
   return res.users;
-  // return null;
 };
+
 const schema = zfd.formData({
+  id: userFieldValidation.id,
   username: userFieldValidation.username,
-  password: userFieldValidation.password,
+  password: userFieldValidation.password.or(z.string().max(0)),
   sshKeys: z.string().transform((val) => {
     // split ssh keys by newline and filter empty lines
     const sshKeys = val.split("\n").filter(Boolean);
@@ -53,15 +54,16 @@ export const action: ActionFunction = async ({ request }) => {
   if (result.error) {
     return validationError(result.error, result.submittedData);
   }
-  const apiUrl = getApiResource("users");
 
+  // Create User
   if (result.data._method === "post") {
+    const apiUrl = getApiResource("users");
     const postData = {
       username: result.data.username,
       password: result.data.password,
       sshKeys: result.data.sshKeys,
     };
-    const response = await fetch(apiUrl, {
+    await fetch(apiUrl, {
       method: "POST",
       headers: {
         Authorization: getAuthorizationHeader(),
@@ -69,14 +71,44 @@ export const action: ActionFunction = async ({ request }) => {
       },
       body: JSON.stringify(postData),
     });
+  }
 
-    console.log("res", response);
-  }
+  // Update User
   if (result.data._method === "put") {
-    console.log("update user");
+    if (!result.data.id) {
+      return null;
+    }
+    const apiUrl = getApiResource("users", result.data.id);
+    const putData = {
+      id: result.data.id,
+      username: result.data.username,
+      password: result.data.password || undefined,
+      sshKeys: result.data.sshKeys,
+    };
+    await fetch(apiUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: getAuthorizationHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(putData),
+    });
   }
+
+  // Delete User
   if (result.data._method === "delete") {
-    console.log("delete user");
+    if (!result.data.id) {
+      return null;
+    }
+    const apiUrl = getApiResource("users", result.data.id);
+    console.log("apiUrl", apiUrl);
+    await fetch(apiUrl, {
+      method: "DELETE",
+      headers: {
+        Authorization: getAuthorizationHeader(),
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   return null;
@@ -147,6 +179,7 @@ export default function Page() {
                               name="_method"
                               value="delete"
                             />
+                            <input type="hidden" name="id" value={user.id} />
                             <button
                               type="submit"
                               className="mr-3 inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
@@ -160,11 +193,14 @@ export default function Page() {
                             method="post"
                             defaultValues={{
                               username: user.username,
+                              // @ts-expect-error textarea field requires a string to display ssh keys separated by newline
+                              sshKeys: user.sshKeys.join("\n"),
                             }}
                             // replace={true}
                             noValidate={true}
                           >
                             <input type="hidden" name="_method" value="put" />
+                            <input type="hidden" name="id" value={user.id} />
                             <button
                               type="submit"
                               className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 tablet:w-auto"
@@ -210,29 +246,27 @@ export default function Page() {
                       <PasswordFormField form="new-user" />
                     </td>
 
-                    <td>
-                      <div className="relative flex justify-end whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium tablet:pr-6">
-                        <ValidatedForm
-                          id="new-user"
-                          validator={userValidator}
-                          method="post"
-                          replace={true}
-                          noValidate={true}
+                    <td className="relative flex justify-end whitespace-nowrap py-4 pl-3 pr-4 pt-10 text-right text-sm font-medium tablet:pr-6">
+                      <ValidatedForm
+                        id="new-user"
+                        validator={userValidator}
+                        method="post"
+                        replace={true}
+                        noValidate={true}
+                      >
+                        <input
+                          form="new-user"
+                          type="hidden"
+                          name="_method"
+                          value="post"
+                        />
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 tablet:w-auto"
                         >
-                          <input
-                            form="new-user"
-                            type="hidden"
-                            name="_method"
-                            value="post"
-                          />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 tablet:w-auto"
-                          >
-                            Add User
-                          </button>
-                        </ValidatedForm>
-                      </div>
+                          Add User
+                        </button>
+                      </ValidatedForm>
                     </td>
                   </tr>
                   <tr className="bg-gray-200">
