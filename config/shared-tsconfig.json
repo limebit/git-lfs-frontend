@@ -15,9 +15,7 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
-    "typeRoots": ["../types", "../node_modules/@types"],
-    "baseUrl": ".",
-    "forceConsistentCasingInFileNames": true
+    "typeRoots": ["../types", "../node_modules/@types"]
   },
   "include": ["remix.env.d.ts"]
 }

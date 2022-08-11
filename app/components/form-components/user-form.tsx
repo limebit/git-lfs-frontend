@@ -21,7 +21,7 @@ import { ValidatedFormTextarea } from "./textarea";
 // the validator, result and type are meant to be used in form components.
 
 export const userFieldValidation = {
-  id: z.string().optional(),
+  id: z.string(),
   username: z
     .string({
       required_error: "Username is required",

@@ -7,6 +7,6 @@ services:
     environment:
       - API_KEY=secret
       - DATA_FOLDER="/service/data"
-    command: yarn run start
+    # command: yarn run start
     volumes:
       - "./data:/service/data"

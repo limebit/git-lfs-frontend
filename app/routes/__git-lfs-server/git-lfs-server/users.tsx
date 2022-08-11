@@ -1,26 +1,21 @@
-import { withZod } from "@remix-validated-form/with-zod";
 import React from "react";
+import { withZod } from "@remix-validated-form/with-zod";
 
-import { ActionFunction, Form, LoaderFunction, useLoaderData } from "remix";
+import { ActionFunction, LoaderFunction, useLoaderData } from "remix";
 import { ValidatedForm, validationError } from "remix-validated-form";
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 
 import {
   PasswordFormField,
+  SshFormField,
   userFieldValidation,
   UsernameFormField,
-  SshFormField,
-} from "../../components/form-components/user-form";
-import { getApiResource, getAuthorizationHeader } from "../../utils.server";
+} from "~/components/form-components/user-form";
+import { getApiResource, getAuthorizationHeader } from "~/utils.server";
+import type { UserResponse } from "~/types";
 
-type LoaderData = {
-  id: string;
-  username: string;
-  sshKeys: string[];
-}[];
-
-export const loader: LoaderFunction = async (): Promise<LoaderData> => {
+export const loader: LoaderFunction = async (): Promise<UserResponse> => {
   const apiUrl = getApiResource("users");
   // const apiUrl = "http://localhost:3000/api/users";
   const res = await (
@@ -34,29 +29,44 @@ export const loader: LoaderFunction = async (): Promise<LoaderData> => {
   return res.users;
 };
 
-const schema = zfd.formData({
+const sshValidator = z.string().transform((val) => {
+  // split ssh keys by newline and filter empty lines
+  const sshKeys = val.split("\n").filter(Boolean);
+  return sshKeys;
+});
+
+const createSchema = zfd.formData({
+  username: userFieldValidation.username,
+  password: userFieldValidation.password,
+  sshKeys: sshValidator,
+  _method: z.enum(["post"]),
+});
+const createValidator = withZod(createSchema);
+
+const updateSchema = zfd.formData({
   id: userFieldValidation.id,
   username: userFieldValidation.username,
   password: userFieldValidation.password.or(z.string().max(0)),
-  sshKeys: z.string().transform((val) => {
-    // split ssh keys by newline and filter empty lines
-    const sshKeys = val.split("\n").filter(Boolean);
-    return sshKeys;
-  }),
-  _method: z.enum(["post", "put", "delete"]),
+  sshKeys: sshValidator,
+  _method: z.enum(["put"]),
 });
+const updateValidator = withZod(updateSchema);
 
-export const userValidator = withZod(schema);
+const deleteSchema = zfd.formData({
+  id: userFieldValidation.id,
+  _method: z.enum(["delete"]),
+});
+const deleteValidator = withZod(deleteSchema);
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const result = await userValidator.validate(formData);
-  if (result.error) {
-    return validationError(result.error, result.submittedData);
-  }
+  const _method = formData.get("_method");
 
-  // Create User
-  if (result.data._method === "post") {
+  if (_method === "post") {
+    const result = await createValidator.validate(formData);
+    if (result.error) {
+      return validationError(result.error, result.submittedData);
+    }
     const apiUrl = getApiResource("users");
     const postData = {
       username: result.data.username,
@@ -74,10 +84,12 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   // Update User
-  if (result.data._method === "put") {
-    if (!result.data.id) {
-      return null;
+  if (_method === "put") {
+    const result = await updateValidator.validate(formData);
+    if (result.error) {
+      return validationError(result.error, result.submittedData);
     }
+
     const apiUrl = getApiResource("users", result.data.id);
     const putData = {
       id: result.data.id,
@@ -96,12 +108,12 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   // Delete User
-  if (result.data._method === "delete") {
-    if (!result.data.id) {
-      return null;
+  if (_method === "delete") {
+    const result = await deleteValidator.validate(formData);
+    if (result.error) {
+      return validationError(result.error, result.submittedData);
     }
     const apiUrl = getApiResource("users", result.data.id);
-    console.log("apiUrl", apiUrl);
     await fetch(apiUrl, {
       method: "DELETE",
       headers: {
@@ -115,7 +127,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Page() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<UserResponse>();
   return (
     <div className="px-4 tablet:px-6 laptop:px-8">
       <div className="tablet:flex tablet:items-center">
@@ -128,7 +140,7 @@ export default function Page() {
         </div>
       </div>
       <div className="mt-8 flex flex-col">
-        <div className="-my-2 -mx-4 overflow-x-auto tablet:-mx-6 laptop:-mx-8">
+        <div className="overflow-x-auto tablet:-mx-6 laptop:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle tablet:px-6 laptop:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 tablet:rounded-lg">
               <table className="min-w-full divide-y divide-gray-300">
@@ -156,24 +168,29 @@ export default function Page() {
                 </thead>
                 <tbody className="bg-white">
                   {data.map((user, index) => (
-                    <React.Fragment key={user.username}>
+                    <React.Fragment key={user.id}>
                       <tr
                         className={index % 2 === 0 ? undefined : "bg-gray-50"}
                       >
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 tablet:pl-6">
                           <UsernameFormField
-                            id={`user-username-${user.username}`}
-                            form={`user-${user.username}`}
+                            id={`user-username-${user.id}`}
+                            form={`user-${user.id}`}
                           />
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <PasswordFormField
-                            id={`user-password-${user.username}`}
-                            form={`user-${user.username}`}
+                            id={`user-password-${user.id}`}
+                            form={`user-${user.id}`}
                           />
                         </td>
                         <td className="relative flex justify-end whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium tablet:pr-6">
-                          <Form method="post">
+                          <ValidatedForm
+                            id={`delete-${user.id}`}
+                            validator={deleteValidator}
+                            method="post"
+                            replace={true}
+                          >
                             <input
                               type="hidden"
                               name="_method"
@@ -186,17 +203,18 @@ export default function Page() {
                             >
                               Löschen
                             </button>
-                          </Form>
+                          </ValidatedForm>
                           <ValidatedForm
-                            id={`user-${user.username}`}
-                            validator={userValidator}
+                            id={`user-${user.id}`}
+                            validator={updateValidator}
                             method="post"
+                            resetAfterSubmit={true}
                             defaultValues={{
                               username: user.username,
                               // @ts-expect-error textarea field requires a string to display ssh keys separated by newline
                               sshKeys: user.sshKeys.join("\n"),
                             }}
-                            // replace={true}
+                            replace={true}
                             noValidate={true}
                           >
                             <input type="hidden" name="_method" value="put" />
@@ -227,7 +245,7 @@ export default function Page() {
                             <SshFormField
                               className="sm:text-sm block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                               id={`user-sshKeys-${user.username}`}
-                              form={`user-${user.username}`}
+                              form={`user-${user.id}`}
                               rows={4}
                             />
                           </div>
@@ -249,10 +267,11 @@ export default function Page() {
                     <td className="relative flex justify-end whitespace-nowrap py-4 pl-3 pr-4 pt-10 text-right text-sm font-medium tablet:pr-6">
                       <ValidatedForm
                         id="new-user"
-                        validator={userValidator}
+                        validator={createValidator}
                         method="post"
                         replace={true}
                         noValidate={true}
+                        resetAfterSubmit={true}
                       >
                         <input
                           form="new-user"

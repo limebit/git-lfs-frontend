@@ -13,18 +13,16 @@ import { NavLink, Outlet } from "remix";
 /* This example requires Tailwind CSS v2.0+ */
 
 const navigation = [
-  { name: "Dashboard", href: "/git-lfs-server", icon: HomeIcon, current: true },
+  { name: "Dashboard", href: "/git-lfs-server/", icon: HomeIcon },
   {
     name: "Users",
-    href: "/git-lfs-server/users",
+    href: "/git-lfs-server/users/",
     icon: UsersIcon,
-    current: false,
   },
   {
     name: "LFS Data",
-    href: "/git-lfs-server/lfs-data",
+    href: "/git-lfs-server/lfs-data/",
     icon: FolderIcon,
-    current: false,
   },
 ];
 
