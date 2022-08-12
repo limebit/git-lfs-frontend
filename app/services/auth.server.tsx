@@ -1,7 +1,7 @@
 import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
-import { loginValidator } from "../routes";
 import { sessionStorage } from "./session.server";
+import { loginValidator } from "~/routes";
 
 export const authenticator = new Authenticator<Boolean>(sessionStorage);
 

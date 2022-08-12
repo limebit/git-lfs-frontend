@@ -5,6 +5,8 @@ node_modules
 /public/build
 .env
 .vercel
-api
+/api
+/tmp
+/data
 
 /app/styles
