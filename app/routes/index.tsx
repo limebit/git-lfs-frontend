@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zfd } from "zod-form-data";
 import { PasswordFormField } from "~/components/form-components/user-form";
 import { authenticator } from "~/services/auth.server";
+
 export const loader: LoaderFunction = async ({ request }) => {
   await authenticator.isAuthenticated(request, {
     successRedirect: "/git-lfs-server/users/",
@@ -37,7 +38,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     return await authenticator.authenticate("form", request, {
-      successRedirect: "/filiale",
+      successRedirect: "/git-lfs-server/users/",
       throwOnError: true,
     });
   } catch (error: unknown) {

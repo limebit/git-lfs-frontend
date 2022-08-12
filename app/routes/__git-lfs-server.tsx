@@ -8,9 +8,15 @@ import {
   XIcon,
 } from "@heroicons/react/outline";
 
-import { NavLink, Outlet } from "remix";
+import { LoaderFunction, NavLink, Outlet } from "remix";
+import { authenticator } from "~/services/auth.server";
 
-/* This example requires Tailwind CSS v2.0+ */
+export const loader: LoaderFunction = async ({ request }) => {
+  await authenticator.isAuthenticated(request, {
+    failureRedirect: "/",
+  });
+  return null;
+};
 
 const navigation = [
   { name: "Dashboard", href: "/git-lfs-server/", icon: HomeIcon },
