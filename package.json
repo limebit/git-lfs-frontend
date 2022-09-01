@@ -9,6 +9,7 @@
     "build:css": "postcss styles/**/*.css --base styles --dir app/styles --env production",
     "build:remix": "cross-env NODE_ENV=production dotenv -e .env remix build",
     "build": "yarn run build:css && yarn run build:remix",
+    "start": "remix-serve build",
     "dev": "concurrently \"yarn run dev:css\" \"remix dev\"",
     "dev:css": "postcss styles --base styles --dir app/styles -w",
     "postinstall": "remix setup node",

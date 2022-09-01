@@ -6,5 +6,16 @@ services:
       - "8000:8000"
     environment:
       - API_KEY=secret
+      - DATA_FOLDER=/service/data
+      - JWT_SECRET=jwt_sercret
     volumes:
       - "./data:/service/data"
+  frontend:
+    build: .
+    ports:
+      - 80:80
+    environment:
+      - GIT_LFS_SERVER_URL=http://git-lfs-server:8000/
+      - GIT_LFS_SERVER_TOKEN=secret
+      - ADMIN_PASSWORD=secret
+
